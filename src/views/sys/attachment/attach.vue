@@ -13,10 +13,16 @@
                     :format="['doc','docx','xls','xlsx','ppt','pptx','zip','rar','pdf','txt']" :on-format-error="formatError"
                     max-siez="20480"
                     :on-success="uploadSuccess"
+                    style="display:inline-block;"
+                    :show-upload-list="false"
+                    :on-progress="onProgress"
                     multiple>
                 <i-button type="success" icon="ios-cloud-upload-outline">附件上传</i-button>
             </Upload>
-            <i-button type="error" @click="deletes()">批量删除</i-button>
+            <Button-group>
+                <i-button @click="uploadProgress.modalShow=true">上传进度</i-button>
+                <i-button type="error" @click="deletes()">批量删除</i-button>
+            </Button-group>
             <Input v-model="page.searchKey" placeholder="请输入关键字搜搜..." style="width: 200px" />
             <Button type="primary" icon="search" @click="init">搜索</Button>
         </Row>
@@ -29,6 +35,30 @@
             <Page :total="page.total" :page-size="page.pageSize" :current="page.pageNum" :page-size-opts="page.sizeopt"
                   @on-page-size-change="pageSizeChange" @on-change="pageOnChange" show-sizer show-elevator ></Page>
         </div>
+
+        <!--自定义上传进度Modal-->
+        <Modal v-model="uploadProgress.modalShow" width="700" @keyup.esc="uploadProgress.modalShow = false">
+            <p slot="header" style="text-align:center">
+                <span>上传进度(完成后移除)</span>
+            </p>
+            <div>
+                <div v-if="JSON.stringify(uploadProgress.uploadList)=='{}'">
+                    <h3 align="center" style="color:#bbb">文件已全部上传完毕，当前没有正在上传的文件</h3>
+                </div>
+                <template v-else v-for="(item,index) in uploadProgress.uploadList">
+                    <Row class-name="zkl-upload-row-list" v-if="JSON.stringify(item)!='{}'">
+                        <Col :xs="6">{{item.name}}</Col>
+                        <Col :xs="18">
+                        <Progress :percent="item.progress" status="active"></Progress>
+                        </Col>
+                    </Row>
+                </template>
+            </div>
+            <Row slot="footer">
+                <Button type="info" size="large" @click="clearUploadReady">清空已上传文件</Button>
+                <Button type="ghost" size="large" @click="uploadProgress.modalShow = false">关闭</Button>
+            </Row>
+        </Modal>
     </div>
 </template>
 
@@ -41,6 +71,15 @@
                 //图片上传请求头
                 header:{
                     'token':this.$store.getters.token
+                },
+                //上传进度
+                uploadProgress:{
+                    modalShow:false,
+                    uploadList:{}
+                },//上传进度
+                uploadProgress:{
+                    modalShow:false,
+                    uploadList:{}
                 },
                 //列表数据
                 attachList:[],
@@ -137,8 +176,8 @@
         methods:{
             init(){
                 this.loading=true;
-                var self = this;
                 this.$refs.upload.clearFiles();
+                var self = this;
                 Util.ajax.post("/api/sys/attachment/list",this.page).then(function (response) {
                     const data = response.data;
                     self.loading=false;
@@ -157,8 +196,25 @@
                 this.page.pageSize = size;
                 this.init();
             },
-            onProgress(response,file,filelist){
-                this.files = filelist;
+            clearUploadReady(){
+                const arr = Object.keys(this.uploadProgress.uploadList);
+                const self=this;
+                console.log(arr);
+                console.log(self.uploadProgress.uploadList);
+                arr.forEach(function (item) {
+                   if(self.uploadProgress.uploadList[item].progress==100){
+                       //delete item;
+                       self.uploadProgress.uploadList[item]={};
+                   }
+                });
+            },
+            //文件上传时（自定义传输进度）
+            onProgress(event,file,filelist){
+                this.uploadProgress.modalShow=true;
+                this.uploadProgress.uploadList[file.name] = {
+                    "name":file.name,
+                    "progress":(event.loaded/event.total).toFixed(2)*100
+                };
             },
             //上传成功
             uploadSuccess(response,file,filelist){

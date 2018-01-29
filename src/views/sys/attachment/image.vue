@@ -86,10 +86,13 @@
         <!--自定义上传进度Modal-->
         <Modal v-model="uploadProgress.modalShow" width="700" @keyup.esc="uploadProgress.modalShow = false">
             <p slot="header" style="text-align:center">
-                <span>上传进度</span>
+                <span>上传进度(完成后移除)</span>
             </p>
             <div>
-                <template v-for="(item,index) in uploadProgress.uploadList">
+                <div v-if="JSON.stringify(uploadProgress.uploadList)=='{}'">
+                    <h3 align="center" style="color:#bbb">文件已全部上传完毕，当前没有正在上传的文件</h3>
+                </div>
+                <template v-else v-for="(item,index) in uploadProgress.uploadList">
                     <Row class-name="zkl-upload-row-list">
                         <Col :xs="6">{{item.name}}</Col>
                         <Col :xs="18">
@@ -193,7 +196,7 @@
             },
             //文件上传时（自定义传输进度）
             onProgress(event,file,filelist){
-                this.uploadProgress.modalShow=true;
+                //this.uploadProgress.modalShow=true;
                 this.uploadProgress.uploadList[file.name] = {
                         "name":file.name,
                         "progress":(event.loaded/event.total).toFixed(2)*100
