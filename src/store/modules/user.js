@@ -15,7 +15,8 @@ const user = {
     mutations: {
         logout (state, vm) {
             //Cookies.remove('token');
-            localStorage.removeItem('token');
+            //localStorage.removeItem('token');
+            localStorage.clear();
             state.token="";
         },
         saveToken(state,token){

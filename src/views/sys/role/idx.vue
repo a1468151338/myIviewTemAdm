@@ -92,7 +92,6 @@
                     {
                         title: '操作',
                         key: 'action',
-                        fixed: 'right',
                         render: (h, params) => {
                             return params.row.name=="超级管理员"?h('div','禁止修改'):h('div', [
                                 h('Button', {

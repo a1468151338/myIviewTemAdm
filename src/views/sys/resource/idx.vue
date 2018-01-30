@@ -24,7 +24,7 @@
                     <br>
                     <!--表单-->
                     <Table ref="table" stripe border :loading="loading" :columns="columns1" :data="data1" @on-selection-change="dochange"></Table>
-                    <br>
+                    <br><br>
                     <!--分页-->
                     <div style="text-align: center">
                         <Page :total="page.total" :page-size="page.pageSize" :current="page.pageNum" :page-size-opts="page.sizeopt"
@@ -122,7 +122,6 @@
                     {
                         title: '操作',
                         key: 'action',
-                        fixed: 'right',
                         render: (h, params) => {
                             return h('div', [
                                 h('Button', {

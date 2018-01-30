@@ -4,6 +4,19 @@ import Util from '@/libs/util';
 const app = {
     state: {
         menuList: [],
+        pageOpenedList: [{
+            title: '首页',
+            path: '',
+            name: 'home_index'
+        }],
+        currentPageName: '',
+        currentPath: [
+            {
+                title: '首页',
+                path: '',
+                name: 'home_index'
+            }
+        ], // 面包屑数组
         routers: [
             otherRouter,
             ...appRouter
@@ -12,6 +25,22 @@ const app = {
     mutations: {
         updateMenulist (state,resourceList) {
             state.menuList = resourceList;
+        },
+        setCurrentPageName (state, name) {
+            state.currentPageName = name;
+        },
+        addOpenSubmenu (state, name) {
+            let hasThisName = false;
+            let isEmpty = false;
+            if (name.length === 0) {
+                isEmpty = true;
+            }
+            if (state.openedSubmenuArr.indexOf(name) > -1) {
+                hasThisName = true;
+            }
+            if (!hasThisName && !isEmpty) {
+                state.openedSubmenuArr.push(name);
+            }
         }
     },
     actions:{
