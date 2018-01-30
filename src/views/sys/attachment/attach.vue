@@ -1,7 +1,5 @@
-<style scoped lang="less">
-    @import './image.less';
-    /*    .ivu-col-span-md-4{height:120px;position: relative;}
-        .ivu-col-span-md-4 img{max-width: 100%;max-height: 100%;transform:translate(-50%,-50%);position: relative;top: 50%;left:50%;}*/
+<style lang="less">
+    @import "attach.less";
 </style>
 
 <template>
@@ -112,6 +110,22 @@
                         }
                     },
                     {
+                        title: '文件大小',
+                        key: 'size',
+                        render:(h,params) => {
+                            let size = params.row.size;
+                            let resStr = "";
+                            if(size<1000){
+                                resStr =  (size)+"字节";
+                            }else if(size<1000000){
+                                resStr = (size/1000).toFixed(2)+"KB";
+                            }else{
+                                resStr = (size/1000000).toFixed(2)+"MB";
+                            }
+                            return h('span',resStr);
+                        }
+                    },
+                    {
                         title: '操作',
                         key: 'action',
                         fixed: 'right',
@@ -162,15 +176,6 @@
         filters:{
             formatDate(val) {
                 return new Date(val).Format("yyyy-MM-dd hh:mm:ss");
-            },
-            formatSize(val){
-                if(val<1000){
-                    return (val)+"字节";
-                }else if(val<1000000){
-                    return (val/1000).toFixed(1)+"KB";
-                }else{
-                    return (val/1000000).toFixed(1)+"MB";
-                }
             }
         },
         methods:{
@@ -199,14 +204,14 @@
             clearUploadReady(){
                 const arr = Object.keys(this.uploadProgress.uploadList);
                 const self=this;
-                console.log(arr);
-                console.log(self.uploadProgress.uploadList);
+                let tempList = {};
                 arr.forEach(function (item) {
-                   if(self.uploadProgress.uploadList[item].progress==100){
+                   if(self.uploadProgress.uploadList[item].progress!=100){
                        //delete item;
-                       self.uploadProgress.uploadList[item]={};
+                       tempList[item] = self.uploadProgress.uploadList[item];
                    }
                 });
+                self.uploadProgress.uploadList = tempList;
             },
             //文件上传时（自定义传输进度）
             onProgress(event,file,filelist){

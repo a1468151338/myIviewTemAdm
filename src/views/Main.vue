@@ -1,4 +1,5 @@
 <style lang="less">
+    @import "../styles/common.less";
     @import "./main.less";
 </style>
 <template>
@@ -19,18 +20,24 @@
                     <Button :style="{transform: 'rotateZ(' + (this.shrink ? '-90' : '0') + 'deg)'}" type="text" @click="toggleClick">
                         <Icon type="navicon" size="32"></Icon>
                     </Button>
+                    <!--位置导航-->
+                    <Breadcrumb style="display:inline-block;margin-left:20px;">
+                        <BreadcrumbItem to="/">首页</BreadcrumbItem>
+                        <BreadcrumbItem to="/components/breadcrumb">Components</BreadcrumbItem>
+                        <BreadcrumbItem>Breadcrumb</BreadcrumbItem>
+                    </Breadcrumb>
                 </div>
                 <div class="header-avator-con">
                     <div class="user-dropdown-menu-con">
                         <Row type="flex" justify="end" align="middle" class="user-dropdown-innercon">
-                            <Dropdown transfer trigger="click" @on-click="handleClickUserDropdown">
+                            <Dropdown transfer trigger="click">
                                 <a href="javascript:void(0)">
                                     <span class="main-user-name">{{ userName }}</span>
                                     <Icon type="arrow-down-b"></Icon>
                                 </a>
                                 <DropdownMenu slot="list">
-                                    <DropdownItem divided>个人资料</DropdownItem>
-                                    <DropdownItem name="loginout" divided>退出登录</DropdownItem>
+                                    <DropdownItem @click="userInfoModal.show=true" divided>个人资料</DropdownItem>
+                                    <DropdownItem name="loginout" @click="handleClickUserDropdown" divided>退出登录</DropdownItem>
                                 </DropdownMenu>
                             </Dropdown>
                             <Avatar icon="person" style="background: #619fe7;margin-left:10px;"></Avatar>
@@ -44,6 +51,54 @@
                 <router-view></router-view>
             </div>
         </div>
+
+        <!-- 自定义Modal -->
+        <Modal v-model="userInfoModal.show" width="700" @keyup.esc="userInfoModal.show = false">
+            <p slot="header" style="text-align:center">
+                <span>用户信息</span>
+            </p>
+            <!--表单-->
+            <div>
+                <Form :model="formItem" :label-width="80">
+                    <FormItem label="姓名">
+                        <Input v-model="formItem.name" placeholder="请输入姓名"></Input>
+                    </FormItem>
+                    <FormItem label="账号">
+                        <Input v-model="formItem.account" placeholder="请输入账号"></Input>
+                    </FormItem>
+                    <FormItem label="密码">
+                        <Input v-if="modal.isadd" type="password" v-model="formItem.password" placeholder="请输入密码"></Input>
+                        <Input v-else type="password" v-model="formItem.password" placeholder="密码为空表示不修改"></Input>
+                    </FormItem>
+                    <FormItem label="重复密码">
+                        <Input type="password" v-model="formItem.passwordCheck" placeholder="请再次输入密码"></Input>
+                    </FormItem>
+                    <FormItem label="性别">
+                        <RadioGroup v-model="formItem.sex">
+                            <Radio label="1">男</Radio>
+                            <Radio label="2">女</Radio>
+                        </RadioGroup>
+                    </FormItem>
+                    <FormItem label="手机">
+                        <Input v-model="formItem.phone" placeholder="请输入手机"></Input>
+                    </FormItem>
+                    <FormItem label="邮箱">
+                        <Input v-model="formItem.email" placeholder="请输入邮箱"></Input>
+                    </FormItem>
+                    <FormItem label="用户角色">
+                        <CheckboxGroup v-model="formItem.sysRoleList">
+                            <template v-for="(item,index) in roleList">
+                                <span v-if="index>0">，</span><Checkbox :label="item.id">{{item.name}}</Checkbox>
+                            </template>
+                        </CheckboxGroup>
+                    </FormItem>
+                </Form>
+            </div>
+            <Row slot="footer">
+                <Button type="info" size="large" @click="updateUserInfo()">确定</Button>
+                <Button type="ghost" size="large" @click="userInfoModal.show = false">取消</Button>
+            </Row>
+        </Modal>
     </div>
 </template>
 <script>
@@ -58,7 +113,14 @@ export default {
     data () {
         return {
             shrink: false,
-            userName: ''
+            userName: '',
+            userInfo:{
+                userName:"",
+
+            },
+            userInfoModal:{
+                show:false
+            }
         };
     },
     computed: {
@@ -71,13 +133,19 @@ export default {
             //初始化获取用户信息
             const self = this;
             Util.ajax.post("/api/sys/main/userInfo").then(function (response) {
-                self.userName = response.data.account;
+                console.log(response.data);
+                if(response.data.code==100){
+                    self.userName = response.data.account;
+                }
             });
             //用户拥有资源
             //self.$store.dispatch("updateMenulist");
         },
         toggleClick () {
             this.shrink = !this.shrink;
+        },
+        editInfo(){
+
         },
         handleClickUserDropdown () {
             //退出登录

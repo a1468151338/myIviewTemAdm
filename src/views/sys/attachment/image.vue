@@ -93,15 +93,16 @@
                     <h3 align="center" style="color:#bbb">文件已全部上传完毕，当前没有正在上传的文件</h3>
                 </div>
                 <template v-else v-for="(item,index) in uploadProgress.uploadList">
-                    <Row class-name="zkl-upload-row-list">
+                    <Row class-name="zkl-upload-row-list" v-if="JSON.stringify(item)!='{}'">
                         <Col :xs="6">{{item.name}}</Col>
                         <Col :xs="18">
-                            <Progress :percent="item.progress" status="active"></Progress>
+                        <Progress :percent="item.progress" status="active"></Progress>
                         </Col>
                     </Row>
                 </template>
             </div>
             <Row slot="footer">
+                <Button type="info" size="large" @click="clearUploadReady">清空已上传文件</Button>
                 <Button type="ghost" size="large" @click="uploadProgress.modalShow = false">关闭</Button>
             </Row>
         </Modal>
@@ -171,10 +172,6 @@
                     isAllCheck:false,
                     ids:[]
                 };
-                this.uploadProgress={
-                    modalShow:false,
-                    uploadList:{}
-                };
                 this.$refs.upload.clearFiles();
                 const self = this;
                 Util.ajax.post("/api/sys/attachment/list",this.page).then(function (response) {
@@ -194,9 +191,21 @@
                 this.page.pageSize = size;
                 this.init();
             },
+            clearUploadReady(){
+                const arr = Object.keys(this.uploadProgress.uploadList);
+                const self=this;
+                let tempList = {};
+                arr.forEach(function (item) {
+                    if(self.uploadProgress.uploadList[item].progress!=100){
+                        //delete item;
+                        tempList[item] = self.uploadProgress.uploadList[item];
+                    }
+                });
+                self.uploadProgress.uploadList = tempList;
+            },
             //文件上传时（自定义传输进度）
             onProgress(event,file,filelist){
-                //this.uploadProgress.modalShow=true;
+                this.uploadProgress.modalShow=true;
                 this.uploadProgress.uploadList[file.name] = {
                         "name":file.name,
                         "progress":(event.loaded/event.total).toFixed(2)*100
