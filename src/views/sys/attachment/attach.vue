@@ -206,10 +206,10 @@
                 const self=this;
                 let tempList = {};
                 arr.forEach(function (item) {
-                   if(self.uploadProgress.uploadList[item].progress!=100){
-                       //delete item;
-                       tempList[item] = self.uploadProgress.uploadList[item];
-                   }
+                    if(self.uploadProgress.uploadList[item].progress!=100){
+                        //delete item;
+                        tempList[item] = self.uploadProgress.uploadList[item];
+                    }
                 });
                 self.uploadProgress.uploadList = tempList;
             },
@@ -267,6 +267,10 @@
                         //var ids = "";
                         Util.ajax.post("/api/sys/attachment/delete",{id:idstr.replace(",","")}).then(function (response) {
                             if(response.data.code=="100"){
+                                this.$Message.error({
+                                    content:'删除成功',
+                                    duration:3
+                                });
                                 self.init();
                             }else{
                                 this.$Message.error({
